@@ -279,7 +279,7 @@ gcloud dataflow flex-template build $TEMPLATE_PATH \
       --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.example.WordCount"
 ```
 
-In the gui you can run a job from this template by selecting Create Job From Template, then custom template, and the gs:// location of the template (TEMPLATE_PATH env var above).
+In the gui you can run a job from this template by selecting Create Job From Template, then custom template, and the `gs://<bucket>/<file-spec>` location of the template (TEMPLATE_PATH env var above).
 
 Running the flex template as a Dataflow job:
 ```
