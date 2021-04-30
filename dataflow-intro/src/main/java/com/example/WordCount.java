@@ -182,7 +182,9 @@ public class WordCount {
         .apply(MapElements.via(new FormatAsTextFn()))
         .apply("WriteCounts", TextIO.write().to(options.getOutput()));
 
-    p.run().waitUntilFinish();
+    // For a Dataflow Flex Template, do NOT waitUntilFinish().
+    //p.run().waitUntilFinish();
+    p.run();
   }
 
   public static void main(String[] args) {

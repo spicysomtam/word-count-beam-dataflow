@@ -1,0 +1,31 @@
+{
+  "name": "Apache Beam WordCount",
+  "description": "An Apache Beam WordCount example",
+  "parameters": [
+    {
+      "name": "inputFile",
+      "label": "Input files",
+      "helpText": "Input file/s to process on a google storage bucket.",
+      "isOptional": true,
+      "regexes": [
+        "^gs:\/\/.+$"
+      ]
+    },
+    {
+      "name": "output",
+      "label": "output file pattern",
+      "helpText": "Output file spec pattern on a google storage bucket",
+      "regexes": [
+        "^gs:\/\/.+$"
+      ]
+    },
+    {
+      "name": "tempLocation",
+      "label": "temporary work location",
+      "helpText": "Temporary work location on a google storage bucket",
+      "regexes": [
+        "^gs:\/\/.+$"
+      ]
+    }
+  ]
+}
