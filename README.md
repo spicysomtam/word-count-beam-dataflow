@@ -33,7 +33,7 @@ $ gcloud config list
 [core]
 account = XXXX@gmail.com
 disable_usage_reporting = True
-project = some-name-312209
+project = annular-haven-312209
 
 Your active configuration is: [default]
 
@@ -52,7 +52,7 @@ Docs for this are [here](https://cloud.google.com/compute/docs/regions-zones/cha
 
 We need a bucket to pass the code to run to dataflow, to pass any data we want dataflow to process, and finally for dataflow to return results. Lets create a bucket:
 ```
-gsutil mb gs://some-name-dataflow-0
+gsutil mb gs://spicysomtam-dataflow-0
 ```
 
 # Need service account to run the job
@@ -64,18 +64,19 @@ Unable to get application default credentials. Please see https://developers.goo
 
 Following the link I need a service account; not sure this is the best way, but it works:
 ```
+gcloud auth login # Choose your gmail account to auth with gcloud
 gcloud iam service-accounts create dataflow-0
 gcloud config list
-gcloud projects add-iam-policy-binding some-name-312209 --member="serviceAccount:dataflow-0@some-name-312209.iam.gserviceaccount.com" --role="roles/owner"
+gcloud projects add-iam-policy-binding annular-haven-312209 --member="serviceAccount:dataflow-0@annular-haven-312209.iam.gserviceaccount.com" --role="roles/owner"
 ```
 
 Docs for [this](https://cloud.google.com/dataflow/docs/concepts/security-and-permissions).
 
-I tried the arg `serviceAccount=dataflow-0@some-name-312209.iam.gserviceaccount.com`, but that did not work.
+I tried the arg `serviceAccount=dataflow-0@annular-haven-312209.iam.gserviceaccount.com`, but that did not work.
 
 Setup the key file and env var:
 ```
-gcloud iam service-accounts keys create dataflow-0.json --iam-account=dataflow-0@some-name-312209.iam.gserviceaccount.com
+gcloud iam service-accounts keys create dataflow-0.json --iam-account=dataflow-0@annular-haven-312209.iam.gserviceaccount.com
 cd dataflow-intro
 cat dataflow-0.json
 export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/dataflow-0.json
@@ -88,9 +89,9 @@ Need env var GOOGLE_APPLICATION_CREDENTIALS setting up as earlier. Then run with
 cd dataflow-intro
 mvn compile exec:java \
   -Dexec.mainClass=com.example.WordCount \
-  -Dexec.args="--project=some-name-312209 \
-  --gcpTempLocation=gs://some-name-dataflow-0/tmp/ \
-  --output=gs://some-name-dataflow-0/output \
+  -Dexec.args="--project=annular-haven-312209 \
+  --gcpTempLocation=gs://spicysomtam-dataflow-0/tmp/ \
+  --output=gs://spicysomtam-dataflow-0/output \
   --runner=DataflowRunner \
   --jobName=dataflow-intro \
   --region=europe-west2" \
@@ -109,10 +110,10 @@ Then run with java (need env var GOOGLE_APPLICATION_CREDENTIALS setting up as ea
 ```
 java -cp target/dataflow-intro-bundled-0.1.jar com.example.WordCount \
   --runner=DataflowRunner \
-  --project=some-name-312209 \
+  --project=annular-haven-312209 \
   --region=europe-west2 \
-  --tempLocation=gs://some-name-dataflow-0/tmp/ \
-  --output=gs://some-name-dataflow-0/output
+  --tempLocation=gs://spicysomtam-dataflow-0/tmp/ \
+  --output=gs://spicysomtam-dataflow-0/output
 ```
 
 # Switch to an inputFile and a seperate bucket for data
@@ -122,33 +123,33 @@ This time we want to specify the inputFile, and keep the dataflow data and input
 Create the additional bucket:
 
 ```
-gsutil mb gs://some-name-dataflow-data-0
+gsutil mb gs://spicysomtam-dataflow-data-0
 ```
 
 Test re-run using a different output:
 ```
 java -cp target/dataflow-intro-bundled-0.1.jar com.example.WordCount \
   --runner=DataflowRunner \
-  --project=some-name-312209 \
+  --project=annular-haven-312209 \
   --region=europe-west2 \
-  --tempLocation=gs://some-name-dataflow-0/tmp/ \
-  --output=gs://some-name-dataflow-data-0/outputFiles/output
+  --tempLocation=gs://spicysomtam-dataflow-0/tmp/ \
+  --output=gs://spicysomtam-dataflow-data-0/outputFiles/output
 ```
 
 Still working? Continue on to preparing an inputFile:
 ```
-gsutil cp gs://apache-beam-samples/shakespeare/kinglear.txt gs://some-name-dataflow-data-0/inputFiles/
+gsutil cp gs://apache-beam-samples/shakespeare/kinglear.txt gs://spicysomtam-dataflow-data-0/inputFiles/
 ```
 
 Rerun using inputFile:
 ```
 java -cp target/dataflow-intro-bundled-0.1.jar com.example.WordCount \
   --runner=DataflowRunner \
-  --project=some-name-312209 \
+  --project=annular-haven-312209 \
   --region=europe-west2 \
-  --tempLocation=gs://some-name-dataflow-0/tmp/ \
-  --inputFile=gs://some-name-dataflow-data-0/inputFiles/*.txt \
-  --output=gs://some-name-dataflow-data-0/outputFiles/output
+  --tempLocation=gs://spicysomtam-dataflow-0/tmp/ \
+  --inputFile=gs://spicysomtam-dataflow-data-0/inputFiles/*.txt \
+  --output=gs://spicysomtam-dataflow-data-0/outputFiles/output
 ```
 
 # Triggering a run of a dataflow pipeline
@@ -163,8 +164,12 @@ Lets try and create these templates and use them.
 
 Lets cleanup our dataflow bucket before continuing:
 ```
-gsutil -m rm gs://some-name-dataflow-0/*
+gsutil -m rm gs://spicysomtam-dataflow-0/*
 ```
+
+## Cloud function with embeded jar and java
+
+
 
 ## Dataflow classic template
 
@@ -188,10 +193,10 @@ Then create the Dataflow template following Google docs:
 cd dataflow-intro-classic-template
 mvn compile exec:java \
   -Dexec.mainClass=com.example.WordCount \
-  -Dexec.args="--project=some-name-312209 \
+  -Dexec.args="--project=annular-haven-312209 \
   --runner=DataflowRunner \
-  --stagingLocation=gs://some-name-dataflow-0/staging \
-  --templateLocation=gs://some-name-dataflow-0/templates/WordCount \
+  --stagingLocation=gs://spicysomtam-dataflow-0/staging \
+  --templateLocation=gs://spicysomtam-dataflow-0/templates/WordCount \
   --region=europe-west2" \
   -Pdataflow-runner
 ```
@@ -199,20 +204,29 @@ mvn compile exec:java \
 Code fails to build:
 ```
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.7.0:compile (default-compile) on project dataflow-intro-classic-template: Compilation failure
-[ERROR] /media/data/amunro-git/some-name/word-count-beam-dataflow/dataflow-intro-classic-template/src/main/java/com/example/WindowedWordCount.java:[175,44] incompatible types: org.apache.beam.sdk.options.ValueProvider<java.lang.String> cannot be converted to java.lang.String
+[ERROR] /media/data/amunro-git/spicysomtam/word-count-beam-dataflow/dataflow-intro-classic-template/src/main/java/com/example/WindowedWordCount.java:[175,44] incompatible types: org.apache.beam.sdk.options.ValueProvider<java.lang.String> cannot be converted to java.lang.String
 ```
 
 Google docs clearly need updating as the `getOutput` part of the code is not in their docs.
 
 I give up on this and move onto Flex Templates. You are welcome to check this out again, follow instructions, and get it working.
 
-# Flex templates
+## Dataflow flex template
 
 This is documented in official Google cloud [documentation](https://cloud.google.com/dataflow/docs/guides/templates/using-flex-templates).
 
 Also refer to the [Configuring Flex Templates Documentation](https://cloud.google.com/dataflow/docs/guides/templates/configuring-flex-templates).
 
 In essence it uses a docker image, to which we add the jar.
+
+Pros:
+* Highly configurable; eg you can specify the gcp instance type, number of instances, etc.
+* Don't need to upload jar file to dataflow on each invokation (or store jar on executor for upload).
+Cons:
+* Slow to start dataflow job; job shows as queued on startup rather than going straight to running state.
+* Complex configuration of template.
+
+### Creating the template
 
 Lets cut the instructions down and re-use what we have already setup.
 
@@ -227,7 +241,7 @@ In your Linux shell, setup some env vars:
 ```
 export PROJECT="$(gcloud config get-value project)"
 export TEMPLATE_IMAGE="gcr.io/$PROJECT/dataflow/templates/word-count:latest"
-export TEMPLATE_PATH="gs://some-name-dataflow-0/dataflow/templates/WordCount.json"
+export TEMPLATE_PATH="gs://spicysomtam-dataflow-0/dataflow/templates/WordCount.json"
 export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/dataflow-0.json
 ```
 
@@ -279,22 +293,98 @@ gcloud dataflow flex-template build $TEMPLATE_PATH \
       --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.example.WordCount"
 ```
 
+### Running the job via a flex template from the console
+
 In the gui you can run a job from this template by selecting Create Job From Template, then custom template, and the `gs://<bucket>/<file-spec>` location of the template (TEMPLATE_PATH env var above).
+
+### Running the job via a flex template using the gcloud command line
 
 Running the flex template as a Dataflow job:
 ```
 gcloud dataflow flex-template run "word-count-`date +%Y%m%d-%H%M%S`" \
-    --template-file-gcs-location "$TEMPLATE_PATH" \
-    --parameters inputFile="gs://some-name-dataflow-data-0/inputFiles/*.txt",output="gs://some-name-dataflow-data-0/outputFiles/output",,tempLocation="gs://some-name-dataflow-0/tmp/" \
+    --template-file-gcs-location "gs://spicysomtam-dataflow-0/dataflow/templates/WordCount.json" \
+    --parameters inputFile="gs://spicysomtam-dataflow-data-0/inputFiles/*.txt",output="gs://spicysomtam-dataflow-data-0/outputFiles/output",tempLocation="gs://spicysomtam-dataflow-0/tmp/" \
     --region=europe-west2
 ```
 
 Oddly, jobs are queued when run from a template, rather than straight away; need to investigate why this is.
 
+### Running the job via a flex template using a Cloud Function
+
+Here we move on to using a Cloud Function to execute the dataflow job using a dataflow flex template. Why would we want to do this? Because Cloud Functions are the serverless Google Cloud way to run code via many triggers. Serverless means we do not need to deploy any infrastructure or networking to run compute.
+
+I used python as am more familiar with that then Node.js. 
+
+Also I found a Java 11 example which I have included.
+
+#### Get setup for local development on your pc
+
+There are two choices here:
+* Use gcloud, setup your credentials, authentication, etc and develop locally as normal.
+* Use the google functional-framework, which will allow you to develop locally as if you were developing a Clound Function on the GCP console. I did not try this
+although you can follow instructions at [getting started](https://cloud.google.com/functions/docs/functions-framework). 
+
+#### Develop locally with python
+
+I won't go into gcloud cli setup; follow GCP docs for this!
+
+Sample code is in the `python-run-dataflow-flex-template` folder; change directory there.
+
+Some pip setup; I used python3.8 on ubuntu 20.04 using pip3; you should check what versions are available in the GCP Cloud Functions and setup your local environment appropriatly. 
+
+See the python dependancies required in `requirements.txt`.
+
+We then need to use the Service Account defined earlier, and define the env variable for it.
+
+Now we can just develop and run the scripts as follow:
+```
+python3 main.py
+```
+
+#### Creating the Cloud Flow function
+
+I just used the gui, defining a Cloud Storage function to perform a pub and sub (the plan was to fire dataflow pipelines when new files turn up). Then just create a pub and sub topic.
+
+Use the dependancies in the `requirements.txt` to setup the same file in the Cloud Function.
+
+To test just use the test feature in the console.
+
+#### Java 11 example
+
+I found [this example](https://github.com/karthikeyan1127/Java_CloudFunction_DataFlow). I updated it with the settings for my example. 
+
+Can deploy this as a Cloud Function:
+* I used a http Cloud Function as the code is a http example.
+* Code is in the `java-dataflow-flex-template` folder.
+* Don't forget to include the `pom.xml`
+* May need to size memory up to work with Java (I set to 1Gb to be sure).
+
+This example uses the Dataflow 2.5.0 deplicated api; I updated the `pom.xml` for the newer settings, but it still does not work:
+```
+1234com.google.api.client.googleapis.json.GoogleJsonResponseException: 400 Bad Request
+POST https://dataflow.googleapis.com/v1b3/projects/annular-haven-312209/templates:launch?gcsPath=gs://spicysomtam-dataflow-templates/dataflow/templates/WordCount.json
+{
+  "code" : 400,
+  "errors" : [ {
+    "domain" : "global",
+    "message" : "(4f88cb4625e8e960): There is no support for job type  with environment version . Please try upgrading the SDK to the latest version. You can find the instructions on installing the latest SDK at https://cloud.google.com/dataflow/docs/guides/installing-beam-sdk. If that doesn't work, please contact the Cloud Dataflow team for assistance at https://cloud.google.com/dataflow/support.",
+    "reason" : "badRequest"
+  } ],
+  "message" : "(4f88cb4625e8e960): There is no support for job type  with environment version . Please try upgrading the SDK to the latest version. You can find the instructions on installing the latest SDK at https://cloud.google.com/dataflow/docs/guides/installing-beam-sdk. If that doesn't work, please contact the Cloud Dataflow team for assistance at https://cloud.google.com/dataflow/support.",
+  "status" : "INVALID_ARGUMENT"
+}
+```
+Not sure what the answer is; maybe Google thinks you should just use a newer programming language to run a submit?
+
+### Cleanup of the template
+
+* Delete the generated docker image.
+* Delete the template json file ($TEMPLATE_PATH).
+
 # Cleanup
 
 Remove the Google Cloud buckets:
 ```
-gsutil rm -r gs://some-name-dataflow-0
-gsutil rm -r gs://some-name-dataflow-data-0
+gsutil rm -r gs://spicysomtam-dataflow-0
+gsutil rm -r gs://spicysomtam-dataflow-data-0
 ```
