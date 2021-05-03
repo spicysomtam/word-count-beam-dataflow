@@ -171,12 +171,12 @@ gsutil -m rm gs://spicysomtam-dataflow-0/*
 
 This is considered the old and least elegant way, but is probably the simplest. This implies you either use a Java based Cloud Function or one which has Java installed via the zip file option. Note that Java is not particular cloud or container friendly and does not have the simplicity and ease of execution that more modern languages have. Thus the use of Java may not be the easiest solution (unless Java is your thing), and if you wish to go this way, you would probably be best to use say Python (or Node.js), and shell out to run Java via a mini jre installed in the Cloud Function zip file. 
 
-I did not want to spent too much time on setting up and testing this solution as its unlikely to be the best solution to implement; thus I have just included a Python script that gives you an example of how to shell out to run Java. 
+I did not want to spent too much time on setting up and testing this solution as its unlikely to be the best solution to implement; thus I have just included a Python script  in the `python-execute-java-to-run-dataflow` folder that gives you an example of how to shell out to run Java. 
 
 
 ## Dataflow classic template
 
-This involves making code changes to change the input parameters and such to ones that can be passed at execution time. Its kind of a fudge and we are recommended to use Flex templates instead.
+This involves making code changes to change the input parameters to ones that can be passed at execution time. Its kind of a fudge and may not work out well if your pipeline flow may change as a result of different inputs. Thus Google recommended to use Flex templates instead and classic templates are only there for backward compatibility.
 
 Thus we try and generate a wordcount example, and follow [official documentation](https://cloud.google.com/dataflow/docs/guides/templates/creating-templates) to modify the code:
 
@@ -212,7 +212,7 @@ Code fails to build:
 
 Google docs clearly need updating as the `getOutput` part of the code is not in their docs.
 
-I give up on this and move onto Flex Templates. You are welcome to check this out again, follow instructions, and get it working.
+I gave up on this and moved onto Flex Templates. You are welcome to check this out again, follow instructions, and get it working.
 
 ## Dataflow flex template
 
@@ -223,15 +223,16 @@ Also refer to the [Configuring Flex Templates Documentation](https://cloud.googl
 In essence it uses a docker image, to which we add the jar.
 
 Pros:
-* Highly configurable; eg you can specify the gcp instance type, number of instances, etc.
+* Highly configurable; eg you can specify the gcp instance type, number of instances, etc, and thus scale the dataflow runs to meet your needs.
 * Don't need to upload jar file to dataflow on each invokation (or store jar on executor for upload).
+
 Cons:
 * Slow to start dataflow job; job shows as queued on startup rather than going straight to running state.
-* Complex configuration of template.
+* Complex configuration of template (more about about this below).
 
 ### Creating the template
 
-Lets cut the instructions down and re-use what we have already setup.
+Lets cut the [official instructions](https://cloud.google.com/dataflow/docs/guides/templates/using-flex-templates) down and re-use what we have already setup.
 
 The main class for your beam app will need a slight tweak (don't forget to repackage your jar):
 ```
@@ -248,7 +249,7 @@ export TEMPLATE_PATH="gs://spicysomtam-dataflow-0/dataflow/templates/WordCount.j
 export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/dataflow-0.json
 ```
 
-Create a `metadata.json` file; here is a sample:
+Create a `metadata.json` file for the parameters; here is a sample:
 ```
 {
   "name": "Apache Beam WordCount",
@@ -296,9 +297,11 @@ gcloud dataflow flex-template build $TEMPLATE_PATH \
       --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.example.WordCount"
 ```
 
+This will create a TEMPLATE_PATH file on a Google storage bucket and a docker image in Google Container Registry in you GCP project.
+
 ### Running the job via a flex template from the console
 
-In the gui you can run a job from this template by selecting Create Job From Template, then custom template, and the `gs://<bucket>/<file-spec>` location of the template (TEMPLATE_PATH env var above).
+In the gui you can run a job from this template by selecting Create Job From Template, then custom template, and the `gs://<bucket>/<file-spec>` location of the template (TEMPLATE_PATH env var abovei; eg `gs://spicysomtam-dataflow-0/dataflow/templates/WordCount.json`).
 
 ### Running the job via a flex template using the gcloud command line
 
@@ -310,35 +313,35 @@ gcloud dataflow flex-template run "word-count-`date +%Y%m%d-%H%M%S`" \
     --region=europe-west2
 ```
 
-Oddly, jobs are queued when run from a template, rather than straight away; need to investigate why this is.
+Jobs are queued when run from a template, rather than straight away; this is due to the need to spin up the docker image created by template creation, etc.
 
 ### Running the job via a flex template using a Cloud Function
 
 Here we move on to using a Cloud Function to execute the dataflow job using a dataflow flex template. Why would we want to do this? Because Cloud Functions are the serverless Google Cloud way to run code via many triggers. Serverless means we do not need to deploy any infrastructure or networking to run compute.
 
-I used python as am more familiar with that then Node.js. 
+I used Python as am more familiar with that then Node.js. 
 
-Also I found a Java 11 example which I have included.
+Also I found a Java 11 example which I have included (see below).
 
 #### Get setup for local development on your pc
 
 There are two choices here:
-* Use gcloud, setup your credentials, authentication, etc and develop locally as normal.
-* Use the google functional-framework, which will allow you to develop locally as if you were developing a Clound Function on the GCP console. I did not try this
-although you can follow instructions at [getting started](https://cloud.google.com/functions/docs/functions-framework). 
+* Use gcloud, setup your credentials, authentication, etc, and develop locally as normal.
+* Use the google functional-framework, which will allow you to develop locally as if you were developing a Cloud Function on the GCP console. I did not try this
+although you can follow instructions at the [getting started guide](https://cloud.google.com/functions/docs/functions-framework). 
 
 #### Develop locally with python
 
-I won't go into gcloud cli setup; follow GCP docs for this!
+I won't go into gcloud cli setup; follow [GCP docs[(https://cloud.google.com/sdk/docs/install)] for this! You will also need to authenticate against your Google Cloud account: `gcloud auth login`.
 
 Sample code is in the `python-run-dataflow-flex-template` folder; change directory there.
 
-Some pip setup; I used python3.8 on ubuntu 20.04 using pip3; you should check what versions are available in the GCP Cloud Functions and setup your local environment appropriatly. 
+Some `pip` setup; I used `python3.8` on ubuntu 20.04 using `pip3` (`pip` is for python 2); you should check what versions are available in the GCP Cloud Functions and setup your local environment appropriatly. 
 
 See the python dependancies required in `requirements.txt`.
 
 We then need to use the Service Account defined earlier, and define the env variable for it.
-
+ 
 Now we can just develop and run the scripts as follow:
 ```
 python3 main.py
@@ -377,12 +380,12 @@ POST https://dataflow.googleapis.com/v1b3/projects/annular-haven-312209/template
   "status" : "INVALID_ARGUMENT"
 }
 ```
-Not sure what the answer is; maybe Google thinks you should just use a newer programming language to run a submit?
+Not sure what the answer is (Java isn't my thing); maybe Google thinks you should just use a newer programming language to run a submit?
 
 ### Cleanup of the template
 
 * Delete the generated docker image.
-* Delete the template json file ($TEMPLATE_PATH).
+* Delete the template json file (TEMPLATE_PATH env var, etc).
 
 # Cleanup
 
