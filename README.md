@@ -41,9 +41,9 @@ Your active configuration is: [default]
 
 I then setup a default region to match where I am going to run it:
 ```
-gcloud compute project-info describe --project some-project-312209
+gcloud compute project-info describe --project annular-haven-312209
 gcloud compute project-info add-metadata --metadata google-compute-default-region=europe-west2,google-compute-default-zone=europe-west2-b
-gcloud compute project-info describe --project some-project-312209
+gcloud compute project-info describe --project annular-haven-312209
 ```
 
 Docs for this are [here](https://cloud.google.com/compute/docs/regions-zones/changing-default-zone-region#gcloud).
@@ -118,7 +118,7 @@ java -cp target/dataflow-intro-bundled-0.1.jar com.example.WordCount \
 
 # Switch to an inputFile and a seperate bucket for data
 
-This time we want to specify the inputFile, and keep the dataflow data and input and output data seperate using a data bucket.
+This time we want to specify the inputFile, and keep the dataflow input and output data seperate from dataflow tmp using a data bucket. The logic here is the data bucket is consumed by something else and I don't want that having access to the inner workings of the dataflow process.
 
 Create the additional bucket:
 
@@ -155,10 +155,10 @@ java -cp target/dataflow-intro-bundled-0.1.jar com.example.WordCount \
 # Triggering a run of a dataflow pipeline
 
 We have discussed how to run a pipeline via Maven (development scenario) and Java (real run). I would like to trigger a pipeline in Google cloud with minimum resources or infrastructure; Cloud Functions seems ideal for this as they can triggered in many ways. Thus I believe we have several options:
-* A Java Cloud Function that contains the pipeline jar, which runs java as per examples above.
-* A Dataflow template where the jar (or java classes) have been staged on some storage; this is perferable as its smaller than a Cloud function that contains a jar and probably quicker to run as there is no need to upload a fat jar, etc. This [Google blog page](https://www.googlenewsapp.com/turn-any-dataflow-pipeline-into-a-reusable-template/) explains in detail how it works, and also describes the two types of Dataflow templates available:
-* Classic templates
-* Flex templates
+* A Java Cloud Function that contains the pipeline jar, which runs java as per examples above. This is the only way to upload a jar; note this is to encourage the use of templates; see next section.
+* A Dataflow template where the jar (or java classes) have been staged on some storage; this is perferable as its smaller than a Cloud Function that contains a jar and probably quicker to run as there is no need to upload a fat jar, etc on each invocation. This [Google blog page](https://www.googlenewsapp.com/turn-any-dataflow-pipeline-into-a-reusable-template/) explains in detail how it works, and also describes the two types of Dataflow templates available:
+  * Classic templates
+  * Flex templates
 
 Lets try and create these templates and use them.
 
@@ -169,6 +169,9 @@ gsutil -m rm gs://spicysomtam-dataflow-0/*
 
 ## Cloud function with embeded jar and java
 
+This is considered the old and least elegant way, but is probably the simplest. This implies you either use a Java based Cloud Function or one which has Java installed via the zip file option. Note that Java is not particular cloud or container friendly and does not have the simplicity and ease of execution that more modern languages have. Thus the use of Java may not be the easiest solution (unless Java is your thing), and if you wish to go this way, you would probably be best to use say Python (or Node.js), and shell out to run Java via a mini jre installed in the Cloud Function zip file. 
+
+I did not want to spent too much time on setting up and testing this solution as its unlikely to be the best solution to implement; thus I have just included a Python script that gives you an example of how to shell out to run Java. 
 
 
 ## Dataflow classic template
