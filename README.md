@@ -334,7 +334,7 @@ although you can follow instructions at the [getting started guide](https://clou
 
 I won't go into gcloud cli setup; follow [GCP docs[(https://cloud.google.com/sdk/docs/install)] for this! You will also need to authenticate against your Google Cloud account: `gcloud auth login`.
 
-#### Basic Cloud Function
+#### Local development run dataflow example
 
 Sample code is in the `python-run-dataflow-flex-template` folder; change directory there.
 
@@ -349,7 +349,7 @@ Now we can just develop and run the scripts as follow:
 python3 main.py
 ```
 
-#### Creating the Cloud Flow function
+#### Cloud Functions example
 
 I just used the gui, defining a Cloud Storage function using a Cloud Storage trigger (event Finalize/create). I called it `bucket_watcher`.
 
