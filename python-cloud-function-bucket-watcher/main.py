@@ -4,9 +4,17 @@ import os
 import json
 import datetime
 from pprint import pprint
+import re
 
-# We are not using flask/http with this so instead request is just a dict
-def run_dataflow(event,context):
+def bucket_watcher(event,context):
+  if re.search("^inputFiles\/.+.txt$",event['name']):
+    r = run_dataflow(event['name'])
+
+  return r
+
+
+def run_dataflow(f):
+  print(f"Processing file: {f}.")
   credentials, _ = google.auth.default()
 
   # cache_discovery should be set to False to avoid errors
@@ -17,14 +25,16 @@ def run_dataflow(event,context):
   gsd = 'gs://spicysomtam-dataflow-data-0'
   gst = 'gs://spicysomtam-dataflow-templates'
 
+  jobName = 'word-count-'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+
   request = dataflow.projects().locations().flexTemplates().launch(
     location = 'us-central1',
     projectId = projectId,
     body = {
       'launch_parameter': {
-        'jobName': 'word-count-'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
+        'jobName': jobName,
         'parameters': {
-          'inputFile': gsd+'/inputFiles/*.txt',
+          'inputFile': gsd+'/'+f,
           'output': gsd+'/outputFiles/output',
           'tempLocation': gsd+'/tmp/'
         },
@@ -34,11 +44,9 @@ def run_dataflow(event,context):
   )
 
   # submit the job
+  print(f"Creating dataflow job: {jobName}.")
   response = request.execute()
   return response
-  #return 0
 
-# Local development
-if __name__ == '__main__':
-  result = run_dataflow('x','y')
-  print(result)
+if __name__ == "__main__":
+   r = bucket_watcher({'name': 'inputFiles/a.txt'},None)

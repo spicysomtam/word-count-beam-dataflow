@@ -334,6 +334,8 @@ although you can follow instructions at the [getting started guide](https://clou
 
 I won't go into gcloud cli setup; follow [GCP docs[(https://cloud.google.com/sdk/docs/install)] for this! You will also need to authenticate against your Google Cloud account: `gcloud auth login`.
 
+#### Basic Cloud Function
+
 Sample code is in the `python-run-dataflow-flex-template` folder; change directory there.
 
 Some `pip` setup; I used `python3.8` on ubuntu 20.04 using `pip3` (`pip` is for python 2); you should check what versions are available in the GCP Cloud Functions and setup your local environment appropriatly. 
@@ -349,11 +351,29 @@ python3 main.py
 
 #### Creating the Cloud Flow function
 
-I just used the gui, defining a Cloud Storage function to perform a pub and sub (the plan was to fire dataflow pipelines when new files turn up). Then just create a pub and sub topic.
+I just used the gui, defining a Cloud Storage function using a Cloud Storage trigger (event Finalize/create). I called it `bucket_watcher`.
+
+Sample code is in the `python-cloud-function-bucket-watcher`; cut and paste `main.py` into the cloud function.
 
 Use the dependancies in the `requirements.txt` to setup the same file in the Cloud Function.
 
-To test just use the test feature in the console.
+You can test by copying a text file of extension `.txt` (eg `a.txt`) to `gs://<bucket>/inputFiles/`:
+```
+gsutil cp a.txt gs://spicysomtam-dataflow-data-0/inputFiles/a.txt
+```
+
+Examine logging as follows (might take a couple of minutes to come through):
+```
+gcloud functions logs read
+```
+
+You will see something like this:
+```
+D      bucket-watcher  339nphkdt3nm  2021-05-04 18:37:52.545  Function execution took 1956 ms, finished with status: 'ok'
+       bucket-watcher  339nphkdt3nm  2021-05-04 18:37:51.469  Creating dataflow job: word-count-20210504-183751.
+       bucket-watcher  339nphkdt3nm  2021-05-04 18:37:50.600  Processing file: inputFiles/a.txt.
+D      bucket-watcher  339nphkdt3nm  2021-05-04 18:37:50.591  Function execution started
+```
 
 #### Java 11 example
 
