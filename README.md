@@ -351,9 +351,9 @@ python3 main.py
 
 #### Cloud Function with trigger example
 
-I just used the gui, defining a Cloud Storage function using a Cloud Storage trigger (event Finalize/create). I called it `bucket_watcher`.
+To create the Cloud Function I just used Cloud Functions in the GCP console, defining a Cloud Storage trigger (event Finalize/create). I called it `bucket_watcher`.
 
-Sample code is in the `python-cloud-function-bucket-watcher`; cut and paste `main.py` into the cloud function.
+Sample code is in the `python-cloud-function-bucket-watcher`; cut and paste `main.py` into the cloud function (`Python3.8`).
 
 Use the dependancies in the `requirements.txt` to setup the same file in the Cloud Function.
 
