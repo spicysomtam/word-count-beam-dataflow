@@ -344,7 +344,7 @@ See the python dependancies required in `requirements.txt`.
 
 We then need to use the Service Account defined earlier, and define the env variable for it.
  
-Now we can just develop and run the scripts as follow:
+Now we can just develop and run the python script locally as follows:
 ```
 python3 main.py
 ```
